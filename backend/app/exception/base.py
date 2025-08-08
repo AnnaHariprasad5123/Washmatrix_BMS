@@ -1,6 +1,6 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from app.config.logger import logger
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class BaseAppException(HTTPException):
@@ -11,7 +11,7 @@ class BaseAppException(HTTPException):
         self.headers = headers or {}
         
         if "timestamp" not in self.headers:
-            self.headers["timestamp"] = datetime.utcnow().isoformat()
+            self.headers["timestamp"] = datetime.now(timezone.utc).isoformat()
         
         logger.warning(f"{self.__class__.__name__} raised: {message}")
         

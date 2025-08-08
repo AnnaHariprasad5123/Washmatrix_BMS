@@ -1,4 +1,4 @@
-from app.test.conftest import client
+from tests.conftest import client
 
 def test_create_book(admin_headers, sample_book):
     response = client.post("/v1/books/", json=sample_book, headers=admin_headers)

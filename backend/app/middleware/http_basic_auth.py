@@ -14,7 +14,8 @@ from app.service.user import UserService
 def verify_user_authentication(username: str, password: str, db: Session) -> UserRole:
     logger.info(f"Verifying credentials for user: {username}")
     
-    user = UserService.authenticate_user(db, username, password)
+    user_service = UserService(db)
+    user = user_service.authenticate_user(username, password)
     if not user:
         logger.warning(f"Authentication failed: User '{username}' not found or invalid password")
         raise InvalidCredentialsException()
@@ -46,6 +47,11 @@ def check_role_access(user_role: UserRole, method: str, path: str) -> bool:
 async def http_basic_auth_middleware(request: Request, call_next):
     
     logger.info(f"Processing request: {request.method} {request.url.path}")
+
+    if request.method == "OPTIONS":
+        logger.info(f"OPTIONS request allowed without authentication: {request.url.path}")
+        response = await call_next(request)
+        return response
     
     if request.url.path in PUBLIC_PATHS:
         logger.info(f"Public path accessed: {request.url.path}")

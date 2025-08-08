@@ -7,17 +7,14 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 logger = logging.getLogger("book_api_logger")
 
-# Prevent logger from propagating to root logger
 logger.propagate = False
 
-# --- Custom log filter to include trace_id ---
 class TraceIDFilter(logging.Filter):
     def filter(self, record):
         if not hasattr(record, 'trace_id'):
             record.trace_id = 'N/A'
         return True
 
-# --- Custom formatter to exclude trace_id when N/A ---
 class CustomFormatter(logging.Formatter):
     def format(self, record):
         if hasattr(record, 'trace_id') and record.trace_id != 'N/A':
@@ -26,13 +23,12 @@ class CustomFormatter(logging.Formatter):
             self._style._fmt = '[%(asctime)s] [%(levelname)s] %(message)s'
         return super().format(record)
 
-# Apply the filter immediately
+
 logger.addFilter(TraceIDFilter())
 
 if not logger.handlers:
     logger.setLevel(logging.INFO)
     
-    # Create log filename with timestamp
     log_filename = datetime.now().strftime("book_api_%Y%m%d_%H%M%S.log")
     log_filepath = os.path.join(LOG_DIR, log_filename)
     

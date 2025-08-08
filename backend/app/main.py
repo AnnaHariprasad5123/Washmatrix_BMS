@@ -14,7 +14,8 @@ from app.exception.handlers import global_exception_handler
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title=APP_TITLE
+    title=APP_TITLE,
+    debug=settings.debug
 )
 
 logger.info(f"Starting {APP_TITLE} application")
@@ -25,7 +26,7 @@ logger.info("Exception handlers registered successfully")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[settings.frontend_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,11 +34,12 @@ app.add_middleware(
 
 logger.info("CORS middleware configured successfully")
 
+
+app.add_middleware(LoggingMiddleware)
+
 app.middleware('http')(http_basic_auth_middleware)
 
 logger.info("HTTP Basic Auth middleware configured successfully")
-
-app.add_middleware(LoggingMiddleware)
 
 app.include_router(
     prefix=API_V1_PREFIX, 
@@ -64,11 +66,10 @@ def health_check():
 def main():
     logger.info(f"Starting server on {settings.host}:{settings.port}")
     uvicorn.run(
-        "main:app",
+       "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.reload,
-        debug=settings.debug
     )
 
 if __name__ == '__main__':
