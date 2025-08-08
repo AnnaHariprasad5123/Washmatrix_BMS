@@ -12,22 +12,32 @@ book_router = APIRouter(
     tags=BOOKS_TAGS
 )
 
+def get_book_service(db: Session = Depends(get_db)) -> BookService:
+    return BookService(db)
+
 @book_router.get("/", response_model=List[Book])
-def get_all_books(skip:int = 0, limit:int = 100, db: Session = Depends(get_db)):
+def get_all_books(
+    skip: int = 0, 
+    limit: int = 100, 
+    book_service: BookService = Depends(get_book_service)
+):
     logger.info(f"Fetching all books with skip={skip} and limit={limit}")
     try:
-        books = BookService.get_all_books(db, skip=skip, limit=limit)
+        books = book_service.get_all_books(skip=skip, limit=limit)
         logger.info(f"Successfully retrieved {len(books)} books")
         return books
     except Exception as e:
         logger.error(f"Failed to fetch books: {str(e)}")
         raise
 
-@book_router.get("/{book_id}",response_model=Book)
-def get_book(book_id:int, db:Session=Depends(get_db)):
+@book_router.get("/{book_id}", response_model=Book)
+def get_book(
+    book_id: int, 
+    book_service: BookService = Depends(get_book_service)
+):
     logger.info(f"Fetching book with ID: {book_id}")
     try:
-        book = BookService.get_book(db, book_id=book_id)
+        book = book_service.get_book(book_id)
         logger.info(f"Successfully retrieved book with ID: {book_id}")
         return book
     except Exception as e:
@@ -36,11 +46,12 @@ def get_book(book_id:int, db:Session=Depends(get_db)):
 
 @book_router.post("/", response_model=Book)
 def create_book(
-    book_data: CreateBook,
-    db: Session = Depends(get_db)):
+    book_data: CreateBook, 
+    book_service: BookService = Depends(get_book_service)
+):
     logger.info(f"Creating new book: {book_data.title}")
     try:
-        new_book = BookService.create_book(db, book_data)
+        new_book = book_service.create_book(book_data)
         logger.info(f"Successfully created book with ID: {new_book.id}")
         return new_book
     except Exception as e:
@@ -49,13 +60,13 @@ def create_book(
 
 @book_router.put("/{book_id}", response_model=Book)
 def update_book(
-    book_id: int,
-    book_data: UpdateBook,
-    db: Session = Depends(get_db)
+    book_id: int, 
+    book_data: UpdateBook, 
+    book_service: BookService = Depends(get_book_service)
 ):
     logger.info(f"Updating book with ID: {book_id}")
     try:
-        updated_book = BookService.update_book(db, book_id, book_data)
+        updated_book = book_service.update_book(book_id, book_data)
         logger.info(f"Successfully updated book with ID: {book_id}")
         return updated_book
     except Exception as e:
@@ -64,12 +75,12 @@ def update_book(
 
 @book_router.delete("/{book_id}")
 def delete_book(
-    book_id: int,
-    db: Session = Depends(get_db)
+    book_id: int, 
+    book_service: BookService = Depends(get_book_service)
 ):
     logger.info(f"Deleting book with ID: {book_id}")
     try:
-        result = BookService.delete_book(db, book_id)
+        result = book_service.delete_book(book_id)
         logger.info(f"Successfully deleted book with ID: {book_id}")
         return result
     except Exception as e:

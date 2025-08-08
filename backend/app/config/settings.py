@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     port: int
     reload: bool
     database_url: str
+    frontend_url: str
 
     model_config = SettingsConfigDict(env_file=env_file, env_file_encoding='utf-8')
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.config.database import get_db
 from app.config.database import Base
+from app.service.book import BookService
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
@@ -34,6 +35,11 @@ def db_session():
         yield db
     finally:
         db.close()
+
+@pytest.fixture
+def book_service(db_session):
+    """Create a BookService instance with the test database session."""
+    return BookService(db_session)
 
 @pytest.fixture
 def test_user():
